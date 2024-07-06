@@ -1,84 +1,92 @@
-import argparse
 import numpy as np
-import pandas as pd
+from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 
-class NeuralNetwork:
-	def __init__(self, layers, dims, epochs, batch_size, learning_rate, loss, nb_features):
-		self.layers = layers
-		self.epochs = epochs
-		self.batch_size = batch_size
-		self.learning_rate = learning_rate
-		self.loss = loss
-		total_layers = np.insert(dims, 0, nb_features)
-		total_layers = np.append(total_layers, 1)
-		print(total_layers)
-		# ici on a la couche 1 avec 30 entrée, les couches profondes avec 24 neurones et 1 couche avec 1 sortie
-		self.parameters = initialize_weights(total_layers)
-		for key, val in self.parameters.items():
-			print(key, val.shape)
+def forward_propagation(X, parameters):
+    activations = {'A0': X}
+    L = len(parameters) // 2
 
-	def __str__(self):
-		return (f'epochs: {self.epochs}, '
-				f'batch_size: {self.batch_size}, '
-				f'learning_rate: {self.learning_rate} ')
+    for l in range(1, L + 1):
+        Z = parameters['W' + str(l)].dot(activations['A' + str(l - 1)]) + parameters['b' + str(l)]
+        activations['A' + str(l)] = 1 / (1 + np.exp(-Z))
+
+    return activations
+
+
+def back_propagation(y, activation, parameters):
+    y = y.T
+    m = y.shape[1]
+
+    L = len(parameters) // 2
+    dz = activation['A' + str(L - 1)] - y
+
+    gradients = {}
+    for l in reversed(range(1, L + 1)):
+        gradients['dW' + str(l)] = 1/m * np.dot(dz, activation['A' + str(l - 1)].T)
+        gradients['db' + str(l)] = 1/m * np.sum(dz, axis=1, keepdims=True)
+        if l > 1:
+            dz = np.dot(parameters['W' + str(l)], dz) * activation['A' + str(l - 1)] * (1 - activation['A' + str(l - 1)])
+
+    return gradients
+
+
+def update_parameters(parameters, gradients, learning_rate):
+    L = len(parameters) // 2
+
+    for l in range(1, L + 1):
+        parameters['W' + str(l)] = parameters['W' + str(l)] - learning_rate * gradients['dW' + str(l)]
+        parameters['b' + str(l)] = parameters['b' + str(l)] - learning_rate * gradients['db' + str(l)]
+
+    return parameters
 
 
 def initialize_weights(dims):
 	params = {}
-	layers = len(dims)
+	L = len(dims)
 
-	for l in range(layers):
+	for l in range(1, L):
 		params['W' + str(l)] = np.random.randn(dims[l], dims[l - 1])
 		params['b' + str(l)] = np.random.randn(dims[l], 1)
 
 	return params
 
 
-class Layer:
-	def __init__(self, size, nb_units, activation):
-		self.input_size = size # nombre de features en entré par neurone, ici 30 par
-		self.nb_units = nb_units # nombre de neurone par couche, ici 24
-		self.activation = activation # fonction d'activation, ici sigmoid (1 ou 0) et softmax pour le dernier (distribution de proba)
+def train(X, y, nn):
+    X = X.T
 
-	def __str__(self):
-		return f'input_size: {self.input_size}, nb_units: {self.nb_units}, activation: {self.activation}'
+    # print(nn)
+    # for lay in nn.layers:
+    # 	print(lay)
 
+    dims = np.insert(nn.hidden_layers, 0, nn.nb_features)
+    dims = np.append(dims, 1)
+    nn.parameters = initialize_weights(dims)
 
-def parse_args():
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--layers', nargs='+', type=int, required=True)
-	parser.add_argument('--epochs', type=int, default=100)
-	parser.add_argument('--batch_size', type=int, default=32)
-	parser.add_argument('--learning_rate', type=float, default=0.01)
-	parser.add_argument('--loss', type=str, default='binary_crossentropy')
-	parser.add_argument('--activation', type=str, default='sigmoid')
-	return parser.parse_args()
+    params = nn.parameters
+    for key, val in params.items():
+    	print(key, val.shape)
 
+    train_loss = []
+    train_acc = []
 
-def create_neural_network(args, nb_features):
-	layers = []
+    for i in tqdm(range(nn.epochs)):
 
-	for layer in args.layers:
-		layers.append(Layer(
-			nb_features,
-			layer,
-			args.activation,
-		))
-	layers.append(Layer(
-		nb_features,
-		1,
-		'softmax',
-	))
+        activations = forward_propagation(X, params)
+        # for key, val in activations.items():
+        # 	print(key, val.shape)
+        gradients = back_propagation(y, activations, params)
+        # for key, val in gradients.items():
+        # 	print(key, val.shape)
 
-	return NeuralNetwork(layers, args.layers, args.epochs, args.batch_size, args.learning_rate, args.loss, nb_features)
+        params = update_parameters(params, gradients, nn.learning_rate)
+        print('===============')
+        for key, val in params.items():
+            print(key, val.shape)
 
+        if i % 10 == 0:
+            L = len(params) // 2
+            # train_loss.append(log_loss(y, activations['A' + str(L)])
 
-if __name__ == '__main__':
-	args = parse_args()
-	features = pd.read_csv('train_X_std.csv')
-	neural_network = create_neural_network(args, features.shape[1])
-
-	print(neural_network)
-	for lay in neural_network.layers:
-		print(lay)
+    # fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(18, 4))
+    # ax[0].plot(range(nn.epochs), train_loss)
