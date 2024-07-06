@@ -13,6 +13,7 @@ class NeuralNetwork:
 		total_layers = np.insert(dims, 0, nb_features)
 		total_layers = np.append(total_layers, 1)
 		print(total_layers)
+		# ici on a la couche 1 avec 30 entrée, les couches profondes avec 24 neurones et 1 couche avec 1 sortie
 		self.parameters = initialize_weights(total_layers)
 		for key, val in self.parameters.items():
 			print(key, val.shape)
@@ -36,9 +37,9 @@ def initialize_weights(dims):
 
 class Layer:
 	def __init__(self, size, nb_units, activation):
-		self.input_size = size
-		self.nb_units = nb_units
-		self.activation = activation
+		self.input_size = size # nombre de features en entré par neurone, ici 30 par
+		self.nb_units = nb_units # nombre de neurone par couche, ici 24
+		self.activation = activation # fonction d'activation, ici sigmoid (1 ou 0) et softmax pour le dernier (distribution de proba)
 
 	def __str__(self):
 		return f'input_size: {self.input_size}, nb_units: {self.nb_units}, activation: {self.activation}'
