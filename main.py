@@ -28,7 +28,7 @@ if __name__ == '__main__':
     params = train.train(X.T, y, neural_network)
     np.savez('datas/params', **params)
 
-# TODO: check comment se servir de loss et batch_size
+# TODO: check comment se servir de loss
 # TODO: weights_initializer='heUniform')
 # TODO: training/validation accuracy plot
 # TODO: faire softmax

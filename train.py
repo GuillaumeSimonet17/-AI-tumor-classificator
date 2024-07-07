@@ -67,9 +67,22 @@ def train(X, y, nn):
     nn.parameters = initialize_weights(dims)
     params = nn.parameters
 
-    # train_loss = []
+    train_loss = []
 
     for i in tqdm(range(nn.epochs)):
+
+        # A mettre sur notion :
+        # Mini-Batch Gradient Descent : divise les exemples en lot pour maj les params
+        # Utilise efficacement la mémoire et permet une mise à jour plus stable des paramètres.
+        # permet d'accélérer l'entraînement tout en offrant une meilleure stabilité des gradients.
+        # Les processeurs et les GPU sont conçus pour tirer parti de la mémoire cache, qui est beaucoup
+        # plus rapide que la RAM. Lorsqu'on utilise des mini-batches, les données peuvent tenir dans la mémoire cache,
+        # ce qui accélère les calculs.
+        # gradient : Convergence Plus Stable et plus rapide
+
+        # sans le MBGD : Chaque itération nécessite un passage complet sur l'ensemble des données.
+        # Pour les grands ensembles de données, cela peut prendre beaucoup de temps avant chaque mise à jour.
+        # Grande Mémoire Nécessaire : Peut ne pas tenir dans la mémoire cache, ralentissant les calculs.
 
         for j in range(0, X.shape[1], nn.batch_size):
             X_batch = X[:, j:j + nn.batch_size]
@@ -78,8 +91,17 @@ def train(X, y, nn):
             gradients = back_propagation(y_batch, activations, params)
             params = update_parameters(params, gradients, nn.learning_rate)
 
-        # y_pred = predict(X, params)
-        # train_loss.append(log_loss(y, y_pred.T))
+        # LOSS FUNCTION : a mettre sur notion
+        # Binary Cross-Entropy : Utilisée pour les problèmes de classification binaire.
+        # Categorical Cross-Entropy : Utilisée pour les problèmes de classification multi-classes.
+        # Mean Squared Error (MSE) : Utilisée pour les problèmes de régression.
+
+        # La fonction de perte est utilisée pour évaluer la performance de votre modèle pendant l'entraînement.
+        # Elle calcule la différence entre les prédictions du modèle et les valeurs réelles des données d'entraînement.
+        # L'objectif de l'entraînement est de minimiser cette perte.
+
+        y_pred = predict(X, params)
+        train_loss.append(compute_loss(y, y_pred, nn.loss))
 
     nn.parameters = params
     y_pred = predict(X, params)
@@ -100,9 +122,13 @@ def predict(X, params):
     return Af >= 0.5
 
 
-def log_loss(y_true, y_pred):
+def compute_loss(y_true, y_pred, loss_type):
     m = y_true.shape[0]
     epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    loss = -1 / m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+
+    if loss_type == 'binaryCrossentropy':
+        loss = -1 / m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+    else:
+        raise ValueError("Unsupported loss type.")
     return loss
