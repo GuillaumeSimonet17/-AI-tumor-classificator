@@ -21,10 +21,14 @@ if __name__ == '__main__':
     y = np.array(pd.read_csv('datas/train_Y_bool.csv', header=None)).reshape(-1, 1)
 
     neural_network = NeuralNetwork(args.layers, args.epochs, args.batch_size, args.learning_rate, args.loss, features.shape[1])
+    if neural_network.batch_size > features.shape[1]:
+        raise ValueError('Batch size can\'t be larger than the number of features')
 
-    params = train.train(features.T, y, neural_network)
+    X = np.array(features)
+    params = train.train(X.T, y, neural_network)
     np.savez('datas/params', **params)
 
 # TODO: check comment se servir de loss et batch_size
 # TODO: weights_initializer='heUniform')
 # TODO: training/validation accuracy plot
+# TODO: faire softmax

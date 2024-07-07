@@ -71,9 +71,12 @@ def train(X, y, nn):
 
     for i in tqdm(range(nn.epochs)):
 
-        activations = forward_propagation(X, params)
-        gradients = back_propagation(y, activations, params)
-        params = update_parameters(params, gradients, nn.learning_rate)
+        for j in range(0, X.shape[1], nn.batch_size):
+            X_batch = X[:, j:j + nn.batch_size]
+            y_batch = y[j:j + nn.batch_size]
+            activations = forward_propagation(X_batch, params)
+            gradients = back_propagation(y_batch, activations, params)
+            params = update_parameters(params, gradients, nn.learning_rate)
 
         # y_pred = predict(X, params)
         # train_loss.append(log_loss(y, y_pred.T))
