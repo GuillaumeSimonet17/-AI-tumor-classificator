@@ -68,6 +68,7 @@ def train(X, y, nn):
     params = nn.parameters
 
     train_loss = []
+    train_acc = []
 
     for i in tqdm(range(nn.epochs)):
 
@@ -101,15 +102,26 @@ def train(X, y, nn):
         # L'objectif de l'entraînement est de minimiser cette perte.
 
         y_pred = predict(X, params)
-        train_loss.append(compute_loss(y, y_pred, nn.loss))
+        train_loss.append(compute_loss(y, y_pred.T, nn.loss))
+        train_acc.append(compute_accuracy(y, y_pred.T))
 
     nn.parameters = params
-    y_pred = predict(X, params)
 
-    # plt.plot(train_loss)
-    # plt.xlabel('iterations')
-    # plt.ylabel('cost')
-    # plt.show()
+    fig, ax = plt.subplots(1, 2, figsize=(12, 4))
+    ax[0].plot(range(nn.epochs), train_loss, label='Training Loss')
+    ax[0].set_xlabel('Epochs')
+    ax[0].set_ylabel('Loss')
+    ax[0].set_title('Training Loss')
+    ax[0].legend()
+
+    ax[1].plot(range(nn.epochs), train_acc, label='Training Accuracy')
+    ax[1].set_xlabel('Epochs')
+    ax[1].set_ylabel('Accuracy')
+    ax[1].set_title('Training Accuracy')
+    ax[1].legend()
+
+    plt.show()
+
 
     np.savetxt('datas/y_pred.csv', y_pred.T, fmt='%d', delimiter=',')
     return params
@@ -132,3 +144,10 @@ def compute_loss(y_true, y_pred, loss_type):
     else:
         raise ValueError("Unsupported loss type.")
     return loss
+
+
+def compute_accuracy(y_true, y_pred):
+    correct_predictions = np.sum(y_true == y_pred)
+    total_predictions = y_true.shape[0]
+    accuracy = correct_predictions / total_predictions
+    return accuracy
