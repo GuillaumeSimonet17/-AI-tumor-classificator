@@ -10,11 +10,13 @@ def forward_propagation(X, parameters):
     for l in range(1, L):
         Z = parameters['W' + str(l)].dot(activations['A' + str(l - 1)]) + parameters['b' + str(l)]
         activations['A' + str(l)] = 1 / (1 + np.exp(-Z)) # sigmoid activation
+        # print(activations['A' + str(l)])
 
     ZL = parameters['W' + str(L)].dot(activations['A' + str(L - 1)]) + parameters['b' + str(L)]
     AL = 1 / (1 + np.exp(-ZL))
+    # AL = softmax(ZL)
+    # print(AL)
     activations['A' + str(L)] = AL
-
     return activations
 
 
@@ -56,19 +58,21 @@ def initialize_weights(dims):
 
     for l in range(1, L):
         params['W' + str(l)] = np.random.randn(dims[l], dims[l - 1])
-        params['b' + str(l)] = np.random.randn(dims[l], 1)
+        params['b' + str(l)] = np.zeros((dims[l], 1))
 
     return params
 
 
-def train(X, y, nn):
+def train(X, X_val, y, y_val, nn):
     dims = np.insert(nn.hidden_layers, 0, nn.nb_features)
     dims = np.append(dims, 1)
     nn.parameters = initialize_weights(dims)
     params = nn.parameters
 
     train_loss = []
+    val_loss = []
     train_acc = []
+    val_acc = []
 
     for i in tqdm(range(nn.epochs)):
 
@@ -102,28 +106,35 @@ def train(X, y, nn):
         # L'objectif de l'entraînement est de minimiser cette perte.
 
         y_pred = predict(X, params)
-        train_loss.append(compute_loss(y, y_pred.T, nn.loss))
+        train_loss.append(compute_loss(y, y_pred.T))
         train_acc.append(compute_accuracy(y, y_pred.T))
+
+        y_pred_val = predict(X_val, params)
+        val_loss.append(compute_loss(y_val, y_pred_val.T))
+        val_acc.append(compute_accuracy(y_val, y_pred_val.T))
+
+        # print(f'epoch {i}/{nn.epochs} - loss: {train_loss[i]} - val_loss: {val_loss[i]}')
 
     nn.parameters = params
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 4))
     ax[0].plot(range(nn.epochs), train_loss, label='Training Loss')
+    ax[0].plot(range(nn.epochs), val_loss, label='Validation Loss')
     ax[0].set_xlabel('Epochs')
     ax[0].set_ylabel('Loss')
-    ax[0].set_title('Training Loss')
+    ax[0].set_title('Loss')
     ax[0].legend()
 
     ax[1].plot(range(nn.epochs), train_acc, label='Training Accuracy')
+    ax[1].plot(range(nn.epochs), val_acc, label='Validation Accuracy')
     ax[1].set_xlabel('Epochs')
     ax[1].set_ylabel('Accuracy')
-    ax[1].set_title('Training Accuracy')
+    ax[1].set_title('Accuracy')
     ax[1].legend()
 
     plt.show()
 
-
-    np.savetxt('datas/y_pred.csv', y_pred.T, fmt='%d', delimiter=',')
+    # np.savetxt('datas/y_pred.csv', y_pred.T, fmt='%d', delimiter=',')
     return params
 
 
@@ -134,15 +145,11 @@ def predict(X, params):
     return Af >= 0.5
 
 
-def compute_loss(y_true, y_pred, loss_type):
+def compute_loss(y_true, y_pred):
     m = y_true.shape[0]
     epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-
-    if loss_type == 'binaryCrossentropy':
-        loss = -1 / m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
-    else:
-        raise ValueError("Unsupported loss type.")
+    loss = -1 / m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
     return loss
 
 
