@@ -1,0 +1,39 @@
+
+# DOC :
+# https://www.evidentlyai.com/classification-metrics/accuracy-precision-recall
+
+   # Mini-Batch Gradient Descent : divise les exemples en lot pour maj les params
+        # Utilise efficacement la mémoire et permet une mise à jour plus stable des paramètres.
+        # permet d'accélérer l'entraînement tout en offrant une meilleure stabilité des gradients.
+        # Les processeurs et les GPU sont conçus pour tirer parti de la mémoire cache, qui est beaucoup
+        # plus rapide que la RAM. Lorsqu'on utilise des mini-batches, les données peuvent tenir dans la mémoire cache,
+        # ce qui accélère les calculs.
+        # gradient : Convergence Plus Stable et plus rapide
+
+        # sans le MBGD : Chaque itération nécessite un passage complet sur l'ensemble des données.
+        # Pour les grands ensembles de données, cela peut prendre beaucoup de temps avant chaque mise à jour.
+        # Grande Mémoire Nécessaire : Peut ne pas tenir dans la mémoire cache, ralentissant les calculs.
+
+  # LOSS FUNCTION : a mettre sur notion
+        # Binary Cross-Entropy : Utilisée pour les problèmes de classification binaire.
+        # Categorical Cross-Entropy : Utilisée pour les problèmes de classification multi-classes.
+        # Mean Squared Error (MSE) : Utilisée pour les problèmes de régression.
+
+        # La fonction de perte est utilisée pour évaluer la performance de votre modèle pendant l'entraînement.
+        # Elle calcule la différence entre les prédictions du modèle et les valeurs réelles des données d'entraînement.
+        # L'objectif de l'entraînement est de minimiser cette perte.
+
+
+Aucune mesure n'est parfaite à elle seule. Il est donc judicieux d'examiner plusieurs
+mesures simultanément et de définir le bon équilibre entre précision et rappel.
+
+Vrai positif = tumeur correctement classé comme maligne par le modèle.
+Vrai négatif = tumeur correctement classé comme bénigne par le modèle.
+
+Faux positif = tumeur incorrectement classé comme maligne par le modèle. (fausse alerte)
+Faux négatif = tumeur incorrectement classé comme bénigne par le modèle. (grave)
+
+Le rappel est utile lorsque le coût des faux négatifs est élevé
+
+precision = true_positives / true_positives + false_positives
+recall = true_positives / true_positives + false_negatives

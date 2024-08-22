@@ -26,7 +26,7 @@ def standardization(data_to_std):
 def compute_loss(y_true, y_pred):
     m = y_true.shape[1]  # y_true et y_pred doivent être de forme (n_classes, m)
     epsilon = 1e-15
-    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)  # Éviter les log(0)
+    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     loss = -1 / m * np.sum(y_true * np.log(y_pred))
     return loss
 
@@ -55,10 +55,6 @@ def compute_precision(y_true, y_pred):
     return precision
 
 
-# DOC :
-# https://www.evidentlyai.com/classification-metrics/accuracy-precision-recall
-
-
 if __name__ == '__main__':
     # test_features = pd.read_csv('datas/test.csv', header=None)
     # type_of_tumor = test_features.iloc[:,1]
@@ -66,20 +62,6 @@ if __name__ == '__main__':
     # test_features_std = standardization(data)
     # params = load_model('datas/params.npz')
     # test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
-
-    # Aucune mesure n'est parfaite à elle seule. Il est donc judicieux d'examiner plusieurs
-    # mesures simultanément et de définir le bon équilibre entre précision et rappel.
-
-    # Vrai positif = tumeur correctement classé comme maligne par le modèle.
-    # Vrai négatif = tumeur correctement classé comme bénigne par le modèle.
-
-    # Faux positif = tumeur incorrectement classé comme maligne par le modèle. (fausse alerte)
-    # Faux négatif = tumeur incorrectement classé comme bénigne par le modèle. (grave)
-
-    # Le rappel est utile lorsque le coût des faux négatifs est élevé
-
-    # precision = true_positives / true_positives + false_positives
-    # recall = true_positives / true_positives + false_negatives
 
     # nb_y_positive = sum(1 for x in type_of_tumor if x == 'M')
     # nb_y_negative = len(test_Y_bool) - nb_y_positive

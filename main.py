@@ -29,6 +29,7 @@ if __name__ == '__main__':
 
     val_features = pd.read_csv('datas/validation_X_std.csv', header=None)
     val_y = np.array(pd.read_csv('datas/validation_Y_bool.csv', header=None)).reshape(-1, 1)
+    val_y = to_one_hot(val_y, 2).T
 
     neural_network = NeuralNetwork(args.layers, args.epochs, args.batch_size, args.learning_rate, args.loss, train_features.shape[1])
     if neural_network.batch_size > train_features.shape[1]:
