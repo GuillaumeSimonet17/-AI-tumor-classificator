@@ -8,6 +8,7 @@ class NeuralNetwork:
         self.loss = loss
         self.hidden_layers = hidden_layers
         self.nb_features = nb_features
+        self.parameters = False
 
     def __str__(self):
         return (f'epochs: {self.epochs}, '

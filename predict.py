@@ -1,3 +1,5 @@
+from numpy import ndarray
+
 import train
 import numpy as np
 import pandas as pd
@@ -20,8 +22,10 @@ def load_model(file_path):
 
 
 def standardization(data_to_std):
-    return (data_to_std - np.mean(data_to_std, axis=0)) / np.std(data_to_std, axis=0)
-
+    if isinstance(data_to_std, ndarray) and data_to_std.shape[0] >= 2 :
+        return (data_to_std - np.mean(data_to_std, axis=0)) / np.std(data_to_std, axis=0)
+    else:
+        print('Not a ndarray or is a one line array')
 
 def compute_loss(y_true, y_pred):
     m = y_true.shape[1]  # y_true et y_pred doivent être de forme (n_classes, m)
@@ -32,14 +36,21 @@ def compute_loss(y_true, y_pred):
 
 
 def compute_accuracy(y_true, y_pred):
-    correct_predictions = np.sum(y_true[0] == y_pred[0])
+    y_true_col1 = y_true.T[:, 0]
+    y_pred_col1 = y_pred.T[:, 0]
+    correct_predictions = np.sum(y_true_col1 == y_pred_col1)
     total_predictions = y_true.shape[1]
     return correct_predictions / total_predictions
 
 
 def compute_recall(y_true, y_pred):
-    true_positives = np.sum((y_true[0] == 1) & (y_pred[0] == 1))
-    false_negatives = np.sum((y_true[0] == 0) & (y_pred[0] == 1))
+    y_true_col1 = y_true.T[:, 0]
+    y_pred_col1 = y_pred.T[:, 0]
+    true_positives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 1))
+    false_negatives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 0))
+    # print('true_positives = ', true_positives)
+    # print('false_negatives = ', false_negatives)
+    # print('false_positives = ', false_positives)
     if (true_positives + false_negatives) == 0:
         return 0.0
     recall = true_positives / (true_positives + false_negatives)
@@ -47,8 +58,10 @@ def compute_recall(y_true, y_pred):
 
 
 def compute_precision(y_true, y_pred):
-    true_positives = np.sum((y_true[0] == 1) & (y_pred[0] == 1))
-    false_positives = np.sum((y_true[0] == 1) & (y_pred[0] == 0))
+    y_true_col1 = y_true.T[:, 0]
+    y_pred_col1 = y_pred.T[:, 0]
+    true_positives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 1))
+    false_positives = np.sum((y_true_col1[0] == 0) & (y_pred_col1[0] == 1))
     if (true_positives + false_positives) == 0:
         return 0.0
     precision = true_positives / (true_positives + false_positives)
@@ -56,61 +69,38 @@ def compute_precision(y_true, y_pred):
 
 
 if __name__ == '__main__':
-    # test_features = pd.read_csv('datas/test.csv', header=None)
-    # type_of_tumor = test_features.iloc[:,1]
-    # data = test_features.iloc[:,2:]
-    # test_features_std = standardization(data)
-    # params = load_model('datas/params.npz')
-    # test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
+    test_features = pd.read_csv('datas/test.csv', header=None)
+    type_of_tumor = test_features.iloc[:,1]
+    data = test_features.iloc[:,2:]
+    data = np.array(data)
+    test_features_std = standardization(data)
+    params = load_model('datas/params.npz')
+    test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
 
-    # nb_y_positive = sum(1 for x in type_of_tumor if x == 'M')
-    # nb_y_negative = len(test_Y_bool) - nb_y_positive
+    test_Y_bool = np.array(test_Y_bool)
+    test_Y_bool = train.to_one_hot(test_Y_bool, 2).T
 
-    # test_Y_bool = np.array(test_Y_bool)
-    # test_Y_bool = train.to_one_hot(test_Y_bool, 2).T
-    # test_predict = predict(test_features_std.T, params)
-    # test_predict = train.to_one_hot(np.array(test_predict), 2)
-    # test_predict = np.where(test_predict == 0., 1., 0)
-    # print(test_predict.shape)
-    #
-    # acc = compute_accuracy(test_Y_bool.T, test_predict)
-    # recall = compute_recall(test_Y_bool.T, test_predict)
-    # precision = compute_precision(test_Y_bool.T, test_predict)
-    # accs = accuracy_score(test_Y_bool, test_predict.T)
-    # loss = compute_loss(test_Y_bool.T, test_predict)
-    # llos = log_loss(test_Y_bool, test_predict.T)
-    # print('Real accuracy on total set =', accs)
-    # print('Accuracy on total set =', acc)
-    # print('---------------------------------')
-    # print('Precision on total set =', precision)
-    # print('Recall on total set =', recall)
-    # print('---------------------------------')
-    # print('Real loss on total set =', llos)
-    # print('Loss on total set =', loss)
-    # print('---------------------------------')
+    test_predict = predict(test_features_std.T, params)
+    test_predict = train.to_one_hot(np.array(test_predict), 2)
+    test_predict = np.where(test_predict == 0., 1., 0)
 
-    # test_features = pd.read_csv('datas/train_X_std.csv', header=None)
-    # test_bools = pd.read_csv('datas/train_Y_bool.csv', header=None)
-    # test_features_std = standardization(test_features)
-    # params = load_model('datas/params.npz')
-    # test_bools = np.array(test_bools)
-    # test_Y_bool = train.to_one_hot(test_bools, 2).T
-    #
-    # test_predict = predict(test_features_std.T, params)
-    # test_predict = train.to_one_hot(np.array(test_predict), 2).T
-    # test_predict = np.where(test_predict == 0., 1., 0)
-    # print(test_Y_bool.shape)
-    # print(test_predict.shape)
-    #
-    # accs = accuracy_score(test_Y_bool, test_predict)
-    # # acc = compute_accuracy(test_Y_bool, test_predict)
-    # llos = log_loss(test_Y_bool, test_predict)
-    # # loss = compute_loss(test_Y_bool, test_predict)
-    # print('Real accuracy on total set =', accs)
-    # # print('Accuracy on total set =', acc)
-    # print('Real loss on total set =', llos)
-    # # print('Loss on total set =', loss)
-    # print('---------------------------------')
+    # if test_predict.shape == (1,2) and test_predict[0][0] == 0:
+    #     print('La tumeur est bénigne')
+    # if test_predict.shape == (1,2) and test_predict[0][0] == 1:
+    #     print('La tumeur est maligne')
+
+    acc = compute_accuracy(test_Y_bool, test_predict.T)
+    recall = compute_recall(test_Y_bool, test_predict.T)
+    precision = compute_precision(test_Y_bool.T, test_predict)
+    loss = compute_loss(test_Y_bool, test_predict.T)
+    print('Accuracy on total set =', acc)
+    print('Precision on total set =', precision)
+    print('Recall on total set =', recall)
+    print('---------------------------------')
+    print('Loss on total set =', loss)
+    print('---------------------------------')
+    print('---------------------------------')
+    print('---------------------------------')
 
     test_features = pd.read_csv('datas/validation_X_std.csv', header=None)
     test_bools = pd.read_csv('datas/validation_Y_bool.csv', header=None)
@@ -118,23 +108,18 @@ if __name__ == '__main__':
 
     test_Y_bool = np.array(test_bools)
     test_Y_bool = train.to_one_hot(test_Y_bool, 2).T
-
     test_predict = predict(test_features.T, params)
     test_predict = train.to_one_hot(np.array(test_predict), 2)
     test_predict = np.where(test_predict == 0., 1., 0)
 
-    acc = compute_accuracy(test_Y_bool.T, test_predict)
-    recall = compute_recall(test_Y_bool.T, test_predict)
-    precision = compute_precision(test_Y_bool.T, test_predict)
-    accs = accuracy_score(test_Y_bool, test_predict.T)
-    loss = compute_loss(test_Y_bool.T, test_predict)
-    llos = log_loss(test_Y_bool, test_predict.T)
-    print('Real accuracy on total set =', accs)
-    print('Accuracy on validation set =', acc)
+    acc = compute_accuracy(test_Y_bool, test_predict.T)
+    recall = compute_recall(test_Y_bool, test_predict.T)
+    precision = compute_precision(test_Y_bool, test_predict.T)
+    loss = compute_loss(test_Y_bool, test_predict.T)
+
+    print('Accuracy on total set =', acc)
+    print('Precision on total set =', precision)
+    print('Recall on total set =', recall)
     print('---------------------------------')
-    print('Precision on validation set =', precision)
-    print('Recall on validation set =', recall)
-    print('---------------------------------')
-    print('Real loss on validation set =', llos)
-    print('Loss on validation set =', loss)
+    print('Loss on total set =', loss)
     print('---------------------------------')
