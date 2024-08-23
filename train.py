@@ -58,14 +58,20 @@ def initialize_weights(dims):
     L = len(dims)
 
     for l in range(1, L):
-        params['W' + str(l)] = np.random.randn(dims[l], dims[l - 1])
+        params['W' + str(l)] = he_uniform((dims[l], dims[l - 1]))
         params['b' + str(l)] = np.zeros((dims[l], 1))
     return params
+
+
+def he_uniform(shape):
+    limit = np.sqrt(6 / shape[1])
+    return np.random.uniform(-limit, limit, shape)
 
 
 def train(X, X_val, y, y_val, nn):
     dims = np.insert(nn.hidden_layers, 0, nn.nb_features)
     dims = np.append(dims, 2)
+
     nn.parameters = initialize_weights(dims)
     params = nn.parameters
 
@@ -74,7 +80,7 @@ def train(X, X_val, y, y_val, nn):
     train_acc = []
     val_acc = []
 
-    print('X_train shape : ', X.shape[1])
+    print('X_train shape : ', X.shape)
     print('X_valid shape : ', X_val.shape)
     print('y_train shape : ', y.shape)
     print('y_valid shape : ', y_val.shape)
@@ -91,6 +97,7 @@ def train(X, X_val, y, y_val, nn):
         y_pred = predict(X, params)
         y_pred = to_one_hot(y_pred.T, 2)
         y_pred = y_pred[:, ::-1]
+
         train_loss.append(compute_loss(y, y_pred.T))
         train_acc.append(compute_recall(y, y_pred.T))
 
@@ -105,15 +112,15 @@ def train(X, X_val, y, y_val, nn):
 
     nn.parameters = params
     fig, ax = plt.subplots(1, 2, figsize=(12, 4))
-    ax[0].plot(range(nn.epochs), train_loss, label='Training Loss')
-    ax[0].plot(range(nn.epochs), val_loss, label='Validation Loss')
+    ax[0].plot(range(len(train_loss)), train_loss, label='Training Loss')
+    ax[0].plot(range(len(val_loss)), val_loss, label='Validation Loss')
     ax[0].set_xlabel('Epochs')
     ax[0].set_ylabel('Loss')
     ax[0].set_title('Loss')
     ax[0].legend()
 
-    ax[1].plot(range(nn.epochs), train_acc, label='Training Accuracy')
-    ax[1].plot(range(nn.epochs), val_acc, label='Validation Accuracy')
+    ax[1].plot(range(len(train_acc)), train_acc, label='Training Accuracy')
+    ax[1].plot(range(len(val_acc)), val_acc, label='Validation Accuracy')
     ax[1].set_xlabel('Epochs')
     ax[1].set_ylabel('Accuracy')
     ax[1].set_title('Accuracy')
@@ -220,3 +227,4 @@ if __name__ == '__main__':
 # TODO : weights_initializer='heUniform'
 # TODO : Assurez-vous que les dimensions des matrices et vecteurs sont correctes tout au long des opérations. Cela est particulièrement important pour le produit matriciel et les opérations de diffusion.
 # TODO : Verifier les load des fichiers (si vides...)
+# TODO : penser a peut etre ajouter class Layer
