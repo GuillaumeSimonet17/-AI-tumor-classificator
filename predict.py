@@ -108,7 +108,6 @@ if __name__ == '__main__':
     print('---------------------------------')
     print('Loss on total set =', loss)
     print('---------------------------------')
-    print('---------------------------------')
     print()
 
     test_features = pd.read_csv('datas/validation_X_std.csv', header=None)

@@ -217,11 +217,6 @@ if __name__ == '__main__':
     np.savez('datas/params', **params)
 
 
-# 1 - split program use seed
-# 2 - training program print perf during training at each epoch
-# 3 - at the end of training, plot loss and acc for train and valid
-# 4 - predict take one exemple and calcul error function
-
-
+# TODO : weights_initializer='heUniform'
 # TODO : Assurez-vous que les dimensions des matrices et vecteurs sont correctes tout au long des opérations. Cela est particulièrement important pour le produit matriciel et les opérations de diffusion.
 # TODO : Verifier les load des fichiers (si vides...)
