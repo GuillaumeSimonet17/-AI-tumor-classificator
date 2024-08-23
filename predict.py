@@ -67,12 +67,23 @@ def compute_precision(y_true, y_pred):
     return precision
 
 
+def standardization_with_values(data, std_values):
+    # print(std_values[1:2])
+    means = np.array(std_values[:1])
+    std = np.array(std_values[1:2])
+    return (data - means) / std
+
+
 if __name__ == '__main__':
+    std_values = pd.read_csv('datas/std_values.csv', header=None)
+
     test_features = pd.read_csv('datas/test.csv', header=None)
     type_of_tumor = test_features.iloc[:,1]
     data = test_features.iloc[:,2:]
     data = np.array(data)
-    test_features_std = standardization(data)
+    # test_features_std = standardization(data)
+    test_features_std = standardization_with_values(data, std_values)
+
     params = load_model('datas/params.npz')
     test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
 
@@ -82,10 +93,10 @@ if __name__ == '__main__':
     test_predict = predict(test_features_std.T, params)
     test_predict = train.to_one_hot(np.array(test_predict), 2)
 
-    # if test_predict.shape == (1,2) and test_predict[0][0] == 0:
-    #     print('La tumeur est bénigne')
-    # if test_predict.shape == (1,2) and test_predict[0][0] == 1:
-    #     print('La tumeur est maligne')
+    if test_predict.shape == (1,2) and test_predict[0][0] == 0:
+        print('La tumeur est bénigne')
+    if test_predict.shape == (1,2) and test_predict[0][0] == 1:
+        print('La tumeur est maligne')
 
     acc = compute_accuracy(test_Y_bool, test_predict)
     recall = compute_recall(test_Y_bool, test_predict)
