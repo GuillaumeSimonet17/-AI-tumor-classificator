@@ -8,13 +8,11 @@ from classes import NeuralNetwork
 
 def forward_propagation(X, parameters):
     activations = {'A0': X}
-
     L = len(parameters) // 2
 
     for l in range(1, L):
         Z = parameters['W' + str(l)].dot(activations['A' + str(l - 1)]) + parameters['b' + str(l)]
         activations['A' + str(l)] = 1 / (1 + np.exp(-Z))
-
 
     ZL = parameters['W' + str(L)].dot(activations['A' + str(L - 1)]) + parameters['b' + str(L)]
     AL = softmax(ZL)
@@ -76,28 +74,32 @@ def train(X, X_val, y, y_val, nn):
     train_acc = []
     val_acc = []
 
-    print('X_train shape : ', X.shape)
+    print('X_train shape : ', X.shape[1])
     print('X_valid shape : ', X_val.shape)
+    print('y_train shape : ', y.shape)
+    print('y_valid shape : ', y_val.shape)
 
     for i in tqdm(range(nn.epochs)):
-
         for j in range(0, X.shape[1], nn.batch_size):
             X_batch = X[:, j:j + nn.batch_size]
-            y_batch = y[j:j + nn.batch_size]
+            y_batch = y.T[j:j + nn.batch_size]
+
             activations = forward_propagation(X_batch, params)
             gradients = back_propagation(y_batch, activations, params)
             params = update_parameters(params, gradients, nn.learning_rate)
 
-
         y_pred = predict(X, params)
-        y_pred = to_one_hot(y_pred, 2)
-        train_loss.append(compute_loss(y, y_pred))
-        train_acc.append(compute_recall(y, y_pred))
+        y_pred = to_one_hot(y_pred.T, 2)
+        y_pred = y_pred[:, ::-1]
+        train_loss.append(compute_loss(y, y_pred.T))
+        train_acc.append(compute_recall(y, y_pred.T))
+
 
         y_pred_val = predict(X_val, params)
-        y_pred_val = to_one_hot(y_pred_val, 2)
-        val_loss.append(compute_loss(y_val.T, y_pred_val))
-        val_acc.append(compute_recall(y_val.T, y_pred_val))
+        y_pred_val = to_one_hot(y_pred_val.T, 2)
+        y_pred_val = y_pred_val[:, ::-1]
+        val_loss.append(compute_loss(y_val, y_pred_val.T))
+        val_acc.append(compute_recall(y_val, y_pred_val.T))
 
         print(f'epoch {i}/{nn.epochs} - loss: {train_loss[i]} - val_loss: {val_loss[i]}')
 
@@ -118,7 +120,6 @@ def train(X, X_val, y, y_val, nn):
     ax[1].legend()
 
     plt.show()
-
     # np.savetxt('datas/y_pred.csv', y_pred.T, fmt='%d', delimiter=',')
     return params
 
@@ -137,11 +138,11 @@ def to_one_hot(y, num_classes):
     return one_hot[:, ::-1]
 
 
-
 def to_one_hot1(y, num_classes):
     one_hot = np.zeros((num_classes, y.shape[0]))
     one_hot[y.flatten(), np.arange(y.shape[0])] = 1
     return one_hot
+
 
 def compute_loss(y_true, y_pred):
     m = y_true.shape[1]  # y_true et y_pred doivent être de forme (n_classes, m)
@@ -198,14 +199,12 @@ if __name__ == '__main__':
     args = parse_args()
     train_features = pd.read_csv('datas/train_X_std.csv', header=None)
     train_y = np.array(pd.read_csv('datas/train_Y_bool.csv', header=None)).reshape(-1, 1)
-    train_y = to_one_hot(train_y, 2).T
+    train_y = to_one_hot(train_y, 2)
 
     val_features = pd.read_csv('datas/validation_X_std.csv', header=None)
     val_y = np.array(pd.read_csv('datas/validation_Y_bool.csv', header=None)).reshape(-1, 1)
-    val_y = to_one_hot(val_y, 2).T
+    val_y = to_one_hot(val_y, 2)
 
-    print(train_y.T)
-    print(val_y.T)
     neural_network = NeuralNetwork(args.layers, args.epochs, args.batch_size, args.learning_rate, args.loss, train_features.shape[1])
     if neural_network.batch_size > train_features.shape[1]:
         raise ValueError('Batch size can\'t be larger than the number of features')
@@ -213,7 +212,7 @@ if __name__ == '__main__':
     X = np.array(train_features)
     X_val = np.array(val_features)
 
-    params = train(X.T, X_val.T, train_y.T, val_y, neural_network)
+    params = train(X.T, X_val.T, train_y.T, val_y.T, neural_network)
 
     np.savez('datas/params', **params)
 

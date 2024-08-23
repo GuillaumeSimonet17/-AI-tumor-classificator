@@ -36,21 +36,20 @@ def compute_loss(y_true, y_pred):
 
 
 def compute_accuracy(y_true, y_pred):
-    y_true_col1 = y_true.T[:, 0]
-    y_pred_col1 = y_pred.T[:, 0]
+    y_true_col1 = y_true[:, 0]
+    y_pred_col1 = y_pred[:, 0]
     correct_predictions = np.sum(y_true_col1 == y_pred_col1)
-    total_predictions = y_true.shape[1]
+    total_predictions = y_true.shape[0]
     return correct_predictions / total_predictions
 
 
 def compute_recall(y_true, y_pred):
-    y_true_col1 = y_true.T[:, 0]
-    y_pred_col1 = y_pred.T[:, 0]
+    y_true_col1 = y_true[:, 0]
+    y_pred_col1 = y_pred[:, 0]
     true_positives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 1))
     false_negatives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 0))
-    # print('true_positives = ', true_positives)
-    # print('false_negatives = ', false_negatives)
-    # print('false_positives = ', false_positives)
+    print('true_positives = ', true_positives)
+    print('false_negatives = ', false_negatives)
     if (true_positives + false_negatives) == 0:
         return 0.0
     recall = true_positives / (true_positives + false_negatives)
@@ -58,8 +57,8 @@ def compute_recall(y_true, y_pred):
 
 
 def compute_precision(y_true, y_pred):
-    y_true_col1 = y_true.T[:, 0]
-    y_pred_col1 = y_pred.T[:, 0]
+    y_true_col1 = y_true[:, 0]
+    y_pred_col1 = y_pred[:, 0]
     true_positives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 1))
     false_positives = np.sum((y_true_col1[0] == 0) & (y_pred_col1[0] == 1))
     if (true_positives + false_positives) == 0:
@@ -78,21 +77,20 @@ if __name__ == '__main__':
     test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
 
     test_Y_bool = np.array(test_Y_bool)
-    test_Y_bool = train.to_one_hot(test_Y_bool, 2).T
+    test_Y_bool = train.to_one_hot(test_Y_bool, 2)
 
     test_predict = predict(test_features_std.T, params)
     test_predict = train.to_one_hot(np.array(test_predict), 2)
-    test_predict = np.where(test_predict == 0., 1., 0)
 
     # if test_predict.shape == (1,2) and test_predict[0][0] == 0:
     #     print('La tumeur est bénigne')
     # if test_predict.shape == (1,2) and test_predict[0][0] == 1:
     #     print('La tumeur est maligne')
 
-    acc = compute_accuracy(test_Y_bool, test_predict.T)
-    recall = compute_recall(test_Y_bool, test_predict.T)
-    precision = compute_precision(test_Y_bool.T, test_predict)
-    loss = compute_loss(test_Y_bool, test_predict.T)
+    acc = compute_accuracy(test_Y_bool, test_predict)
+    recall = compute_recall(test_Y_bool, test_predict)
+    precision = compute_precision(test_Y_bool, test_predict)
+    loss = compute_loss(test_Y_bool.T, test_predict.T)
     print('Accuracy on total set =', acc)
     print('Precision on total set =', precision)
     print('Recall on total set =', recall)
@@ -100,22 +98,22 @@ if __name__ == '__main__':
     print('Loss on total set =', loss)
     print('---------------------------------')
     print('---------------------------------')
-    print('---------------------------------')
+    print()
 
     test_features = pd.read_csv('datas/validation_X_std.csv', header=None)
     test_bools = pd.read_csv('datas/validation_Y_bool.csv', header=None)
     params = load_model('datas/params.npz')
 
     test_Y_bool = np.array(test_bools)
-    test_Y_bool = train.to_one_hot(test_Y_bool, 2).T
+    test_Y_bool = train.to_one_hot(test_Y_bool, 2)
+
     test_predict = predict(test_features.T, params)
     test_predict = train.to_one_hot(np.array(test_predict), 2)
-    test_predict = np.where(test_predict == 0., 1., 0)
 
-    acc = compute_accuracy(test_Y_bool, test_predict.T)
-    recall = compute_recall(test_Y_bool, test_predict.T)
-    precision = compute_precision(test_Y_bool, test_predict.T)
-    loss = compute_loss(test_Y_bool, test_predict.T)
+    acc = compute_accuracy(test_Y_bool, test_predict)
+    recall = compute_recall(test_Y_bool, test_predict)
+    precision = compute_precision(test_Y_bool, test_predict)
+    loss = compute_loss(test_Y_bool.T, test_predict.T)
 
     print('Accuracy on total set =', acc)
     print('Precision on total set =', precision)
