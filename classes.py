@@ -1,5 +1,4 @@
 
-
 class NeuralNetwork:
     def __init__(self, hidden_layers, epochs, batch_size, learning_rate, loss, nb_features):
         self.epochs = epochs
@@ -18,14 +17,3 @@ class NeuralNetwork:
                 f'hidden_layers: {self.hidden_layers}, '
                 f'nb_features: {self.nb_features} '
         )
-
-
-# class Layer:
-#     def __init__(self, size, nb_units, activation):
-#         self.input_size = size
-#         self.nb_units = nb_units
-#         self.activation = activation
-#
-#     def __str__(self):
-#         return f'input_size: {self.input_size}, nb_units: {self.nb_units}, activation: {self.activation}'
-

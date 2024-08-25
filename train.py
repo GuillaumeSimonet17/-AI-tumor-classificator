@@ -152,7 +152,7 @@ def to_one_hot1(y, num_classes):
 
 
 def compute_loss(y_true, y_pred):
-    m = y_true.shape[1]  # y_true et y_pred doivent être de forme (n_classes, m)
+    m = y_true.shape[1]  # (n_classes, m)
     epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     loss = -1 / m * np.sum(y_true * np.log(y_pred))
@@ -204,13 +204,20 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    train_features = pd.read_csv('datas/train_X_std.csv', header=None)
-    train_y = np.array(pd.read_csv('datas/train_Y_bool.csv', header=None)).reshape(-1, 1)
-    train_y = to_one_hot(train_y, 2)
+    try:
+        train_features = pd.read_csv('datas/train_X_std.csv', header=None)
+        train_y = np.array(pd.read_csv('datas/train_Y_bool.csv', header=None)).reshape(-1, 1)
+        train_y = to_one_hot(train_y, 2)
 
-    val_features = pd.read_csv('datas/validation_X_std.csv', header=None)
-    val_y = np.array(pd.read_csv('datas/validation_Y_bool.csv', header=None)).reshape(-1, 1)
-    val_y = to_one_hot(val_y, 2)
+        val_features = pd.read_csv('datas/validation_X_std.csv', header=None)
+        val_y = np.array(pd.read_csv('datas/validation_Y_bool.csv', header=None)).reshape(-1, 1)
+        val_y = to_one_hot(val_y, 2)
+    except FileNotFoundError as e:
+        print(f"File not found: {e.filename}")
+        raise
+    except pd.errors.EmptyDataError as e:
+        print(f"Empty data error: {e}")
+        raise
 
     neural_network = NeuralNetwork(args.layers, args.epochs, args.batch_size, args.learning_rate, args.loss, train_features.shape[1])
     if neural_network.batch_size > train_features.shape[1]:
@@ -220,11 +227,8 @@ if __name__ == '__main__':
     X_val = np.array(val_features)
 
     params = train(X.T, X_val.T, train_y.T, val_y.T, neural_network)
+    if params:
+        np.savez('datas/params', **params)
 
-    np.savez('datas/params', **params)
 
-
-# TODO : weights_initializer='heUniform'
 # TODO : Assurez-vous que les dimensions des matrices et vecteurs sont correctes tout au long des opérations. Cela est particulièrement important pour le produit matriciel et les opérations de diffusion.
-# TODO : Verifier les load des fichiers (si vides...)
-# TODO : penser a peut etre ajouter class Layer

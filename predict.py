@@ -48,8 +48,8 @@ def compute_recall(y_true, y_pred):
     y_pred_col1 = y_pred[:, 0]
     true_positives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 1))
     false_negatives = np.sum((y_true_col1 == 1) & (y_pred_col1 == 0))
-    print('true_positives = ', true_positives)
-    print('false_negatives = ', false_negatives)
+    # print('true_positives = ', true_positives)
+    # print('false_negatives = ', false_negatives)
     if (true_positives + false_negatives) == 0:
         return 0.0
     recall = true_positives / (true_positives + false_negatives)
@@ -68,23 +68,28 @@ def compute_precision(y_true, y_pred):
 
 
 def standardization_with_values(data, std_values):
-    # print(std_values[1:2])
     means = np.array(std_values[:1])
     std = np.array(std_values[1:2])
     return (data - means) / std
 
 
 if __name__ == '__main__':
-    std_values = pd.read_csv('datas/std_values.csv', header=None)
+    try:
+        std_values = pd.read_csv('datas/std_values.csv', header=None)
+        test_features = pd.read_csv('datas/test.csv', header=None)
+        params = load_model('datas/params.npz')
+    except FileNotFoundError as e:
+        print(f"File not found: {e.filename}")
+        raise
+    except pd.errors.EmptyDataError as e:
+        print(f"Empty data error: {e}")
+        raise
 
-    test_features = pd.read_csv('datas/test.csv', header=None)
     type_of_tumor = test_features.iloc[:,1]
     data = test_features.iloc[:,2:]
     data = np.array(data)
-    # test_features_std = standardization(data)
     test_features_std = standardization_with_values(data, std_values)
 
-    params = load_model('datas/params.npz')
     test_Y_bool = [1 if x == 'M' else 0 for x in type_of_tumor]
 
     test_Y_bool = np.array(test_Y_bool)
@@ -94,9 +99,9 @@ if __name__ == '__main__':
     test_predict = train.to_one_hot(np.array(test_predict), 2)
 
     if test_predict.shape == (1,2) and test_predict[0][0] == 0:
-        print('La tumeur est bénigne')
+        print('====== La tumeur est bénigne')
     if test_predict.shape == (1,2) and test_predict[0][0] == 1:
-        print('La tumeur est maligne')
+        print('====== La tumeur est maligne')
 
     acc = compute_accuracy(test_Y_bool, test_predict)
     recall = compute_recall(test_Y_bool, test_predict)
@@ -110,9 +115,16 @@ if __name__ == '__main__':
     print('---------------------------------')
     print()
 
-    test_features = pd.read_csv('datas/validation_X_std.csv', header=None)
-    test_bools = pd.read_csv('datas/validation_Y_bool.csv', header=None)
-    params = load_model('datas/params.npz')
+    try:
+        test_features = pd.read_csv('datas/validation_X_std.csv', header=None)
+        test_bools = pd.read_csv('datas/validation_Y_bool.csv', header=None)
+        params = load_model('datas/params.npz')
+    except FileNotFoundError as e:
+        print(f"File not found: {e.filename}")
+        raise
+    except pd.errors.EmptyDataError as e:
+        print(f"Empty data error: {e}")
+        raise
 
     test_Y_bool = np.array(test_bools)
     test_Y_bool = train.to_one_hot(test_Y_bool, 2)
