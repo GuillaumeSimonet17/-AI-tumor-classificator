@@ -145,12 +145,6 @@ def to_one_hot(y, num_classes):
     return one_hot[:, ::-1]
 
 
-def to_one_hot1(y, num_classes):
-    one_hot = np.zeros((num_classes, y.shape[0]))
-    one_hot[y.flatten(), np.arange(y.shape[0])] = 1
-    return one_hot
-
-
 def compute_loss(y_true, y_pred):
     m = y_true.shape[1]  # (n_classes, m)
     epsilon = 1e-15
