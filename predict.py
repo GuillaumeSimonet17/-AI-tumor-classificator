@@ -26,7 +26,7 @@ def standardization(data_to_std):
         print('Not a ndarray or is a one line array')
 
 def compute_loss(y_true, y_pred):
-    m = y_true.shape[1]  # y_true et y_pred doivent être de forme (n_classes, m)
+    m = y_true.shape[1]
     epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     loss = - np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)) / m
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     if test_predict.shape == (1,2) and test_predict[0][0] == 0:
         print('====== La tumeur est bénigne')
-    if test_predict.shape == (1,2) and test_predict[0][0] == 1:
+    elif test_predict.shape == (1,2) and test_predict[0][0] == 1:
         print('====== La tumeur est maligne')
 
     acc = compute_accuracy(test_Y_bool, test_predict)

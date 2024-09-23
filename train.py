@@ -131,7 +131,6 @@ def train(X, X_val, y, y_val, nn):
     ax[1].legend()
 
     plt.show()
-    # np.savetxt('datas/y_pred.csv', y_pred.T, fmt='%d', delimiter=',')
     return params
 
 
@@ -150,13 +149,13 @@ def to_one_hot(y, num_classes):
 
 
 def compute_loss(y_true, y_pred):
-    m = y_true.shape[1]  # (n_classes, m)
+    m = y_true.shape[1]
     epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     loss = - np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))/ m
     return loss
 
-
+# Number of time that the model has right
 def compute_accuracy(y_true, y_pred):
     y_true_col1 = y_true.T[:, 0]
     y_pred_col1 = y_pred.T[:, 0]
@@ -164,7 +163,7 @@ def compute_accuracy(y_true, y_pred):
     total_predictions = y_true.shape[1]
     return correct_predictions / total_predictions
 
-
+# Recall is useful when the cost of false negatives is high
 def compute_recall(y_true, y_pred):
     y_true_col1 = y_true.T[:, 0]
     y_pred_col1 = y_pred.T[:, 0]
@@ -178,7 +177,7 @@ def compute_recall(y_true, y_pred):
     recall = true_positives / (true_positives + false_negatives)
     return recall
 
-
+# Precision is useful when the cost of a false positive is high
 def compute_precision(y_true, y_pred):
     y_true_col1 = y_true.T[:, 0]
     y_pred_col1 = y_pred.T[:, 0]
@@ -227,6 +226,3 @@ if __name__ == '__main__':
     params = train(X.T, X_val.T, train_y.T, val_y.T, neural_network)
     if params:
         np.savez('datas/params', **params)
-
-
-# TODO : Assurez-vous que les dimensions des matrices et vecteurs sont correctes tout au long des opérations. Cela est particulièrement important pour le produit matriciel et les opérations de diffusion.
