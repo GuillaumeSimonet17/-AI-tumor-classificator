@@ -89,26 +89,30 @@ def train(X, X_val, y, y_val, nn):
         for j in range(0, X.shape[1], nn.batch_size):
             X_batch = X[:, j:j + nn.batch_size]
             y_batch = y.T[j:j + nn.batch_size]
-
+            
             activations = forward_propagation(X_batch, params)
             gradients = back_propagation(y_batch, activations, params)
             params = update_parameters(params, gradients, nn.learning_rate)
-
+        
         y_pred = predict(X, params)
         y_pred = to_one_hot(y_pred.T, 2)
         y_pred = y_pred[:, ::-1]
-
+        
         train_loss.append(compute_loss(y, y_pred.T))
         train_acc.append(compute_recall(y, y_pred.T))
-
-
+        
+        
         y_pred_val = predict(X_val, params)
         y_pred_val = to_one_hot(y_pred_val.T, 2)
         y_pred_val = y_pred_val[:, ::-1]
-        val_loss.append(compute_loss(y_val, y_pred_val.T))
-        val_acc.append(compute_recall(y_val, y_pred_val.T))
+        current_loss = compute_loss(y_val, y_pred_val.T)
 
+        val_loss.append(current_loss)
+        val_acc.append(compute_recall(y_val, y_pred_val.T))
         print(f'epoch {i}/{nn.epochs} - loss: {train_loss[i]} - val_loss: {val_loss[i]}')
+
+        if current_loss < 1:
+                break
 
     nn.parameters = params
     fig, ax = plt.subplots(1, 2, figsize=(12, 4))
