@@ -1,6 +1,8 @@
 
 class NeuralNetwork:
     def __init__(self, hidden_layers, epochs, batch_size, learning_rate, loss, nb_features):
+        if len(hidden_layers) < 2:
+            hidden_layers.append(hidden_layers[0])
         self.epochs = epochs
         self.batch_size = batch_size
         self.learning_rate = learning_rate
